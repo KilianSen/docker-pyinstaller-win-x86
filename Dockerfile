@@ -34,17 +34,28 @@ ENV DEBIAN_FRONTEND=noninteractive \
 #            automatically in GitHub Actions CI runners.
 #            On bare-metal arm64 hosts, run once before using this image:
 #              docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+#
+# We use the official WineHQ repository instead of Ubuntu's default repos
+# because the Ubuntu 22.04 wine packages (wine32/wine64/libwine:i386) have
+# known conflicts that cause apt-get to exit with code 100.
 RUN set -ex \
-    && dpkg --add-architecture i386 \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
         wget \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN set -ex \
+    && dpkg --add-architecture i386 \
+    && mkdir -pm755 /etc/apt/keyrings \
+    && wget -q -O /etc/apt/keyrings/winehq-archive.key \
+         https://dl.winehq.org/wine-builds/winehq.key \
+    && wget -q -NP /etc/apt/sources.list.d/ \
+         https://dl.winehq.org/wine-builds/ubuntu/dists/jammy/winehq-jammy.sources \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
         xvfb \
-        wine \
-        wine32 \
-        wine64 \
-        libwine:i386 \
+        winehq-stable \
     && rm -rf /var/lib/apt/lists/*
 
 # ── Bootstrap the Wine prefix ──────────────────────────────────────────────────
