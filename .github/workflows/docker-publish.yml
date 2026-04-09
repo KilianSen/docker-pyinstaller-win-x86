@@ -33,6 +33,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set lower case repository name
+        run: echo "REPO=${GITHUB_REPOSITORY,,}" >> ${GITHUB_ENV}
+
       # ── 2. Prepare platform-specific Docker tag slug ────────────────────────
       - name: Prepare platform slug
         id: slug
@@ -62,7 +65,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ghcr.io/${{ env.REPO }}
           # Tag rules:
           #   • On version tags (v1.2.3):  latest, 1, 1.2, 1.2.3
           #   • On branch push (main):     main
@@ -84,7 +87,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           # Store the build in the cache; push the per-platform digest to GHCR
           # so the merge step below can assemble the multi-arch manifest.
-          outputs: "type=image,name=ghcr.io/${{ github.repository }},push-by-digest=true,name-canonical=true,push=${{ github.event_name != 'pull_request' }}"
+          outputs: "type=image,name=ghcr.io/${{ env.REPO }},push-by-digest=true,name-canonical=true,push=${{ github.event_name != 'pull_request' }}"
           cache-from: type=gha,scope=${{ steps.slug.outputs.slug }}
           cache-to: type=gha,mode=max,scope=${{ steps.slug.outputs.slug }}
 
@@ -114,6 +117,9 @@ jobs:
       - build-and-push
 
     steps:
+      - name: Set lower case repository name
+        run: echo "REPO=${GITHUB_REPOSITORY,,}" >> ${GITHUB_ENV}
+
       - name: Download amd64 digest
         uses: actions/download-artifact@v4
         with:
@@ -140,7 +146,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ghcr.io/${{ env.REPO }}
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -153,9 +159,9 @@ jobs:
         run: |
           docker buildx imagetools create \
             $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf 'ghcr.io/${{ github.repository }}@sha256:%s ' *)
+            $(printf 'ghcr.io/${{ env.REPO }}@sha256:%s ' *)
 
       - name: Inspect manifest
         run: |
           docker buildx imagetools inspect \
-            ghcr.io/${{ github.repository }}:${{ steps.meta.outputs.version }}
+            ghcr.io/${{ env.REPO }}:${{ steps.meta.outputs.version }}
