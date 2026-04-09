@@ -47,6 +47,12 @@ RUN set -ex \
 
 RUN set -ex \
     && dpkg --add-architecture i386 \
+    && if [ "$(dpkg --print-architecture)" = "arm64" ]; then \
+         sed -i 's/^deb /deb [arch=arm64] /g' /etc/apt/sources.list; \
+         echo "deb [arch=i386] http://archive.ubuntu.com/ubuntu/ jammy main restricted universe multiverse" >> /etc/apt/sources.list; \
+         echo "deb [arch=i386] http://archive.ubuntu.com/ubuntu/ jammy-updates main restricted universe multiverse" >> /etc/apt/sources.list; \
+         echo "deb [arch=i386] http://archive.ubuntu.com/ubuntu/ jammy-security main restricted universe multiverse" >> /etc/apt/sources.list; \
+       fi \
     && mkdir -pm755 /etc/apt/keyrings \
     && wget -q -O /etc/apt/keyrings/winehq-archive.key \
          https://dl.winehq.org/wine-builds/winehq.key \
