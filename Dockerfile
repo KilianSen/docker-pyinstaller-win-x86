@@ -24,6 +24,13 @@ ENV DEBIAN_FRONTEND=noninteractive \
     WINEDEBUG=-all \
     DISPLAY=:99
 
+# Disable Mono and Gecko installer prompts
+ENV WINEDLLOVERRIDES="mscoree,mshtml="
+# Make sure Debian/Ubuntu knows not to ask for user input
+ENV DEBIAN_FRONTEND=noninteractive
+# It's also good practice to define your architecture explicitly
+ENV WINEARCH=win64
+
 # ── Install Wine and system packages ──────────────────────────────────────────
 # wine32 provides the 32-bit Windows (x86) emulation layer needed to run the
 # Windows x86 Python interpreter and PyInstaller's bootloader.
