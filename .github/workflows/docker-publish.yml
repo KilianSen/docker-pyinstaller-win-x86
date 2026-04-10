@@ -68,9 +68,10 @@ jobs:
           images: ghcr.io/${{ env.REPO }}
           # Tag rules:
           #   • On version tags (v1.2.3):  latest, 1, 1.2, 1.2.3
-          #   • On branch push (main):     main
+          #   • On branch push (main):     main, latest
           #   • All events:                sha-<short>
           tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
@@ -148,6 +149,7 @@ jobs:
         with:
           images: ghcr.io/${{ env.REPO }}
           tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
