@@ -22,6 +22,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     WINEARCH=win32 \
     WINEPREFIX=/wine \
     WINEDEBUG=-all \
+    WINEDLLOVERRIDES="mscoree,mshtml=" \
     DISPLAY=:99
 
 # ── Install Wine and system packages ──────────────────────────────────────────
@@ -65,7 +66,7 @@ RUN set -ex \
     && rm -rf /var/lib/apt/lists/*
 
 # ── Bootstrap the Wine prefix ──────────────────────────────────────────────────
-RUN xvfb-run sh -c 'wineboot --init 2>/dev/null; while pgrep wineserver > /dev/null; do sleep 1; done'
+RUN xvfb-run sh -c 'wineboot --init 2>/dev/null; wineserver --wait 2>/dev/null'
 
 # ── Install Python for Windows (32-bit) inside Wine ───────────────────────────
 # The installer runs silently (/quiet) and prepends the Python directory to the
@@ -78,16 +79,16 @@ RUN set -ex \
        fi \
     && xvfb-run sh -c \
         "wine /tmp/python-installer.exe /quiet InstallAllUsers=0 PrependPath=1 Include_test=0 2>/dev/null; \
-         while pgrep wineserver > /dev/null; do sleep 1; done" \
+         wineserver --wait 2>/dev/null" \
     && rm /tmp/python-installer.exe
 
 # ── Upgrade pip and install PyInstaller inside Wine Python ────────────────────
 RUN xvfb-run sh -c \
     "wine python -m pip install --upgrade pip 2>/dev/null; \
-     while pgrep wineserver > /dev/null; do sleep 1; done" \
+     wineserver --wait 2>/dev/null" \
  && xvfb-run sh -c \
     "wine python -m pip install pyinstaller==${PYINSTALLER_VERSION} 2>/dev/null; \
-     while pgrep wineserver > /dev/null; do sleep 1; done" \
+     wineserver --wait 2>/dev/null" \
  && find /wine -path "*/pip/cache" -type d -exec rm -rf {} + 2>/dev/null \
  ; true  # pip cache may not exist if nothing was cached; non-zero exit is expected
 
