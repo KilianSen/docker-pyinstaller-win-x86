@@ -24,13 +24,6 @@ ENV DEBIAN_FRONTEND=noninteractive \
     WINEDEBUG=-all \
     DISPLAY=:99
 
-# Disable Mono and Gecko installer prompts
-ENV WINEDLLOVERRIDES="mscoree,mshtml="
-# Make sure Debian/Ubuntu knows not to ask for user input
-ENV DEBIAN_FRONTEND=noninteractive
-# It's also good practice to define your architecture explicitly
-ENV WINEARCH=win64
-
 # ── Install Wine and system packages ──────────────────────────────────────────
 # wine32 provides the 32-bit Windows (x86) emulation layer needed to run the
 # Windows x86 Python interpreter and PyInstaller's bootloader.
@@ -54,8 +47,8 @@ RUN set -ex \
 
 RUN set -ex \
     && dpkg --add-architecture i386 \
-    && if [ "$(dpkg --print-architecture)" = "arm64" ]; then \
-         sed -i 's/^deb /deb [arch=arm64] /g' /etc/apt/sources.list; \
+    && if [ "$(dpkg --print-architecture)" != "amd64" ] && [ "$(dpkg --print-architecture)" != "i386" ]; then \
+         sed -i "s/^deb /deb [arch=$(dpkg --print-architecture)] /" /etc/apt/sources.list; \
          echo "deb [arch=i386] http://archive.ubuntu.com/ubuntu/ jammy main restricted universe multiverse" >> /etc/apt/sources.list; \
          echo "deb [arch=i386] http://archive.ubuntu.com/ubuntu/ jammy-updates main restricted universe multiverse" >> /etc/apt/sources.list; \
          echo "deb [arch=i386] http://archive.ubuntu.com/ubuntu/ jammy-security main restricted universe multiverse" >> /etc/apt/sources.list; \
@@ -68,7 +61,7 @@ RUN set -ex \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
         xvfb \
-        winehq-stable \
+        winehq-stable:i386 \
     && rm -rf /var/lib/apt/lists/*
 
 # ── Bootstrap the Wine prefix ──────────────────────────────────────────────────

@@ -14,8 +14,9 @@ including ARM64 hosts such as Apple-silicon or AWS Graviton CI runners.
 # Build a single-file Windows .exe from myscript.py
 docker run --rm \
   -v "$(pwd):/src" \
-  ghcr.io/kilianSen/docker-pyinstaller-win-x86 \
+  ghcr.io/kiliansen/docker-pyinstaller-win-x86 \
   --onefile myscript.py
+
 ```
 
 The finished executable is written to `/src/dist/` (the mounted directory).
@@ -28,7 +29,7 @@ automatically before running PyInstaller:
 ```bash
 docker run --rm \
   -v "$(pwd):/src" \
-  ghcr.io/kilianSen/docker-pyinstaller-win-x86 \
+  ghcr.io/kiliansen/docker-pyinstaller-win-x86 \
   --onefile --name myapp myscript.py
 ```
 
@@ -55,7 +56,7 @@ jobs:
         run: |
           docker run --rm \
             -v "${{ github.workspace }}:/src" \
-            ghcr.io/kilianSen/docker-pyinstaller-win-x86 \
+            ghcr.io/kiliansen/docker-pyinstaller-win-x86 \
             --onefile --name myapp src/main.py
 ```
 
@@ -115,8 +116,8 @@ Pre-built multi-arch images are published automatically to the
 [GitHub Container Registry](https://github.com/KilianSen/docker-pyinstaller-win-x86/pkgs/container/docker-pyinstaller-win-x86):
 
 ```
-ghcr.io/kilianSen/docker-pyinstaller-win-x86:latest   # latest main-branch build
-ghcr.io/kilianSen/docker-pyinstaller-win-x86:v1.0.0   # specific release tag
+ghcr.io/kiliansen/docker-pyinstaller-win-x86:latest   # latest main-branch build
+ghcr.io/kiliansen/docker-pyinstaller-win-x86:v1.0.0   # specific release tag
 ```
 
 ---
